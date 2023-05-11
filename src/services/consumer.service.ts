@@ -11,8 +11,8 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
     private readonly subscriptionMap: Map<string, Consumer>;
 
     constructor(
-        private readonly kafka: Kafka,
         private readonly moduleRef: ModuleRef,
+        private readonly kafka: Kafka,
         private readonly registry: SchemaRegistry | undefined,
         private readonly subscribeGroupInfos: SubscribeGroupInfoType,
     ) {
@@ -54,8 +54,9 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
                 },
             });
 
-            logService.subscribeToTopics(subscribeGroupInfo.topics.keys());
+            logService.subscribeToTopics(moduleName, subscribeGroupInfo.topics.keys());
             this.subscriptionMap.set(moduleName, consumer);
+            logService.consumerListening(moduleName);
         }
     }
 

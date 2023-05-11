@@ -32,7 +32,7 @@ export class KafkaModule {
                     provide: KafkaConsumer,
                     inject: [ModuleRef],
                     useFactory: (moduleRef: ModuleRef) => {
-                        return new KafkaConsumer(kafka, moduleRef, registry, subscribeGroupInfos);
+                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos);
                     },
                 },
                 {
@@ -55,8 +55,8 @@ export class KafkaModule {
                 {
                     provide: KafkaConsumer,
                     inject: [ModuleRef, ...asyncConfig.inject],
-                    useFactory: async (moduleRef: ModuleRef) => {
-                        const { kafkaConfig, schemaRegistryConfig } = await asyncConfig.useFactory();
+                    useFactory: async (moduleRef: ModuleRef, ...args) => {
+                        const { kafkaConfig, schemaRegistryConfig } = await asyncConfig.useFactory(...args);
 
                         const kafka = new Kafka(kafkaConfig);
                         let registry: SchemaRegistry | undefined = undefined;
@@ -65,13 +65,16 @@ export class KafkaModule {
                             registry = new SchemaRegistry(schemaRegistryConfig);
                         }
 
-                        return new KafkaConsumer(kafka, moduleRef, registry, subscribeGroupInfos);
+                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos);
                     },
                 },
                 {
                     provide: KafkaProducer,
-                    useFactory: async () => {
-                        const { kafkaConfig, producerConfig, schemaRegistryConfig } = await asyncConfig.useFactory();
+                    inject: [...asyncConfig.inject],
+                    useFactory: async (...args) => {
+                        const { kafkaConfig, producerConfig, schemaRegistryConfig } = await asyncConfig.useFactory(
+                            ...args,
+                        );
 
                         const kafka = new Kafka(kafkaConfig);
                         const producer = kafka.producer(producerConfig);

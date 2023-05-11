@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 
 export class LogService {
-    logger = new Logger('KafakaModule');
+    private readonly logger = new Logger('KafakaModule');
 
     warnSubcribeTopicTwice(container: Map<string, any>, topic: string) {
         if (container.has(topic)) this.logger.warn(`Listen twice of topic ${topic}`);
@@ -23,14 +23,14 @@ export class LogService {
         this.logger.error(`Send message to ${topic} with schemaID: ${schemaId} but schema registry not found`);
     }
 
-    subscribeToTopics(topics: Iterable<string>) {
+    subscribeToTopics(moduleName: string, topics: Iterable<string>) {
         for (const topic of topics) {
-            this.logger.log(`Subscribe to topic ${topic}`);
+            this.logger.debug(`In context '${moduleName}', subscribe to topic ${topic}`);
         }
     }
 
-    consumerListening() {
-        this.logger.log('Consumer is listening . . .');
+    consumerListening(moduleName: string) {
+        this.logger.debug(`Module ${moduleName} is ready. All listeners activated...`);
     }
 
     consumerDisconnected(moduleName: string) {
