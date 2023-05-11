@@ -9,47 +9,47 @@ import { KafkaProducer } from '../services/producer.service';
 
 @Module({})
 export class KafkaModule {
-  static async forRoot({
-    kafkaConfig,
-    consumerConfig,
-    producerConfig,
-    schemaRegistryConfig,
-    shouldReadFromBeginning = true,
-  }: KafkaModuleConfig): Promise<DynamicModule> {
-    const kafka = new Kafka(kafkaConfig);
-    const consumer = kafka.consumer(consumerConfig);
-    const producer = kafka.producer(producerConfig);
-    let registry: SchemaRegistry | undefined = undefined;
+    static async forRoot({
+        kafkaConfig,
+        consumerConfig,
+        producerConfig,
+        schemaRegistryConfig,
+        shouldReadFromBeginning = true,
+    }: KafkaModuleConfig): Promise<DynamicModule> {
+        const kafka = new Kafka(kafkaConfig);
+        const consumer = kafka.consumer(consumerConfig);
+        const producer = kafka.producer(producerConfig);
+        let registry: SchemaRegistry | undefined = undefined;
 
-    if (schemaRegistryConfig) {
-      registry = new SchemaRegistry(schemaRegistryConfig);
+        if (schemaRegistryConfig) {
+            registry = new SchemaRegistry(schemaRegistryConfig);
+        }
+
+        return {
+            global: true,
+            module: KafkaModule,
+            providers: [
+                {
+                    provide: KafkaConsumer,
+                    inject: [ModuleRef],
+                    useFactory: (moduleRef: ModuleRef) => {
+                        return new KafkaConsumer(
+                            consumer,
+                            subscribeInfos,
+                            moduleRef,
+                            registry,
+                            shouldReadFromBeginning,
+                        );
+                    },
+                },
+                {
+                    provide: KafkaProducer,
+                    useFactory: () => {
+                        return new KafkaProducer(producer, registry);
+                    },
+                },
+            ],
+            exports: [KafkaProducer],
+        };
     }
-
-    return {
-      global: true,
-      module: KafkaModule,
-      providers: [
-        {
-          provide: KafkaConsumer,
-          inject: [ModuleRef],
-          useFactory: (moduleRef: ModuleRef) => {
-            return new KafkaConsumer(
-              consumer,
-              subscribeInfos,
-              moduleRef,
-              registry,
-              shouldReadFromBeginning
-            );
-          },
-        },
-        {
-          provide: KafkaProducer,
-          useFactory: () => {
-            return new KafkaProducer(producer, registry);
-          },
-        },
-      ],
-      exports: [KafkaProducer],
-    };
-  }
 }
