@@ -3,17 +3,20 @@ import {
     KafkaMessage as KafkaConsumerMessage,
     ProducerRecord as KafkaProducerRecord,
     Message as KafkaProducerMessage,
+    KafkaConfig,
+    ProducerConfig,
 } from 'kafkajs';
 import { SchemaRegistryAPIClientArgs } from '@kafkajs/confluent-schema-registry/dist/api';
-import { KafkaConfig, ConsumerConfig, ProducerConfig } from 'kafkajs';
+import { FactoryProvider, ModuleMetadata } from '@nestjs/common';
 
 export interface KafkaModuleConfig {
     kafkaConfig: KafkaConfig;
-    consumerConfig: ConsumerConfig;
     producerConfig?: ProducerConfig;
     schemaRegistryConfig?: SchemaRegistryAPIClientArgs;
-    shouldReadFromBeginning?: boolean;
 }
+
+export type KafkaModuleAsyncConfig = Pick<ModuleMetadata, 'imports'> &
+    Pick<FactoryProvider<KafkaModuleConfig>, 'useFactory' | 'inject'>;
 
 export interface ProducerOption {
     /**

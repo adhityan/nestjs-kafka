@@ -1,3 +1,4 @@
+import { ConsumerConfig } from 'kafkajs';
 import { ConsumerOption } from './external.interface';
 
 export interface SubscribeHandler extends ConsumerOption {
@@ -5,7 +6,13 @@ export interface SubscribeHandler extends ConsumerOption {
 }
 
 export interface ConsumerHandler extends ConsumerOption {
-    topic: string;
-    context: Function;
     handler: (...args: any[]) => any;
+}
+
+export interface ConsumerGroupHandler extends ConsumerOption {
+    group: string;
+    context: Function;
+    consumerOptions: ConsumerConfig;
+    topics: Map<string, ConsumerHandler>;
+    shouldReadFromBeginning?: boolean;
 }

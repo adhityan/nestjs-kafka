@@ -33,8 +33,8 @@ export class LogService {
         this.logger.log('Consumer is listening . . .');
     }
 
-    consumerDisconnected() {
-        this.logger.log('Consumer has disconnected successfully');
+    consumerDisconnected(moduleName: string) {
+        this.logger.log(`Consumer for module ${moduleName} has disconnected successfully`);
     }
 
     producerConnected() {

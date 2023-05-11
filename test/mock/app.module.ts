@@ -5,18 +5,18 @@ import { AppService } from './app.service';
 import { consumerConfig, kafkaConfig, testMockFn } from './config';
 
 @Module({
-  imports: [KafkaModule.forRoot({ kafkaConfig, consumerConfig, })],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: testMockFn.TEST_CONSUMER1,
-      useValue: Function(),
-    },
-    {
-      provide: testMockFn.TEST_PRODUCER1,
-      useValue: Function(),
-    },
-  ],
+    imports: [KafkaModule.forRoot({ kafkaConfig })],
+    controllers: [AppController],
+    providers: [
+        AppService,
+        {
+            provide: testMockFn.TEST_CONSUMER1,
+            useValue: Function(),
+        },
+        {
+            provide: testMockFn.TEST_PRODUCER1,
+            useValue: Function(),
+        },
+    ],
 })
 export class AppModule {}
