@@ -5,10 +5,19 @@ import { ProducerOption, ProducerRecord } from '../interfaces/external.interface
 import { logService } from './log.service';
 
 export class KafkaProducer implements OnModuleDestroy, OnModuleInit {
-    constructor(private producer: Producer, private registry?: SchemaRegistry) {}
+    constructor(
+        private producer: Producer,
+        private registry?: SchemaRegistry,
+        private readonly disableConnections?: boolean,
+    ) {}
 
     async send<T = any>(record: ProducerRecord<T>, options: ProducerOption = { autoStringifyJson: true }) {
         const { schemaId, autoStringifyJson } = options;
+
+        if (this.disableConnections) {
+            logService.connectionsDisabledButSendReceived(record);
+            return;
+        }
 
         if (schemaId) {
             if (!this.registry) {
@@ -34,11 +43,15 @@ export class KafkaProducer implements OnModuleDestroy, OnModuleInit {
     }
 
     async onModuleInit() {
+        if (this.disableConnections) return;
+
         await this.producer.connect();
         logService.producerConnected();
     }
 
     async onModuleDestroy() {
+        if (this.disableConnections) return;
+
         await this.producer.disconnect();
         logService.producerDisconnected();
     }

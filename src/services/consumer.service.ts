@@ -15,6 +15,7 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
         private readonly kafka: Kafka,
         private readonly registry: SchemaRegistry | undefined,
         private readonly subscribeGroupInfos: SubscribeGroupInfoType,
+        private readonly disableConnections?: boolean,
     ) {
         this.subscriptionMap = new Map<string, Consumer>();
     }
@@ -24,6 +25,7 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
             logService.warnNotSubcribeAnyTopic();
             return;
         }
+        if (this.disableConnections) return;
 
         for await (const [moduleName, subscribeGroupInfo] of this.subscribeGroupInfos) {
             const consumer = this.kafka.consumer(subscribeGroupInfo.consumerOptions);

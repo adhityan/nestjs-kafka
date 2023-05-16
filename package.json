@@ -1,6 +1,6 @@
 {
     "name": "@adhityan/nestjs-kafka",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "description": "A different approach to integrating NestJs and Kafka",
     "main": "dist/src/index.js",
     "repository": {

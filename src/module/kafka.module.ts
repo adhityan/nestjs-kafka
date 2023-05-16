@@ -14,6 +14,7 @@ export class KafkaModule {
         kafkaConfig,
         producerConfig,
         schemaRegistryConfig,
+        disableConnections,
     }: KafkaModuleConfig): Promise<DynamicModule> {
         const kafka = new Kafka(kafkaConfig);
 
@@ -32,13 +33,13 @@ export class KafkaModule {
                     provide: KafkaConsumer,
                     inject: [ModuleRef],
                     useFactory: (moduleRef: ModuleRef) => {
-                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos);
+                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos, disableConnections);
                     },
                 },
                 {
                     provide: KafkaProducer,
                     useFactory: () => {
-                        return new KafkaProducer(producer, registry);
+                        return new KafkaProducer(producer, registry, disableConnections);
                     },
                 },
             ],
@@ -56,7 +57,9 @@ export class KafkaModule {
                     provide: KafkaConsumer,
                     inject: [ModuleRef, ...asyncConfig.inject],
                     useFactory: async (moduleRef: ModuleRef, ...args) => {
-                        const { kafkaConfig, schemaRegistryConfig } = await asyncConfig.useFactory(...args);
+                        const { kafkaConfig, schemaRegistryConfig, disableConnections } = await asyncConfig.useFactory(
+                            ...args,
+                        );
 
                         const kafka = new Kafka(kafkaConfig);
                         let registry: SchemaRegistry | undefined = undefined;
@@ -65,16 +68,15 @@ export class KafkaModule {
                             registry = new SchemaRegistry(schemaRegistryConfig);
                         }
 
-                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos);
+                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos, disableConnections);
                     },
                 },
                 {
                     provide: KafkaProducer,
                     inject: [...asyncConfig.inject],
                     useFactory: async (...args) => {
-                        const { kafkaConfig, producerConfig, schemaRegistryConfig } = await asyncConfig.useFactory(
-                            ...args,
-                        );
+                        const { kafkaConfig, producerConfig, schemaRegistryConfig, disableConnections } =
+                            await asyncConfig.useFactory(...args);
 
                         const kafka = new Kafka(kafkaConfig);
                         const producer = kafka.producer(producerConfig);
@@ -84,7 +86,7 @@ export class KafkaModule {
                             registry = new SchemaRegistry(schemaRegistryConfig);
                         }
 
-                        return new KafkaProducer(producer, registry);
+                        return new KafkaProducer(producer, registry, disableConnections);
                     },
                 },
             ],
