@@ -3,7 +3,8 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Kafka } from 'kafkajs';
 
-import { subscribeGroupInfos, subscribeInfos } from '../data';
+import { subscribeGroupInfos } from '../data';
+import { logService } from '../services/log.service';
 import { KafkaConsumer } from '../services/consumer.service';
 import { KafkaProducer } from '../services/producer.service';
 import { KafkaModuleAsyncConfig, KafkaModuleConfig } from '../interfaces/external.interface';
@@ -16,6 +17,7 @@ export class KafkaModule {
         schemaRegistryConfig,
         disableConnections,
     }: KafkaModuleConfig): Promise<DynamicModule> {
+        kafkaConfig.logCreator = logService.getKafkaJsLogger;
         const kafka = new Kafka(kafkaConfig);
 
         const producer = kafka.producer(producerConfig);

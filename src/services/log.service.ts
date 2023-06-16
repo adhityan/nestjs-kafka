@@ -1,5 +1,6 @@
+import * as util from 'util';
 import { Logger } from '@nestjs/common';
-import { ProducerOption, ProducerRecord } from '../interfaces/external.interface';
+import { ProducerRecord } from '../interfaces/external.interface';
 
 export class LogService {
     private readonly logger = new Logger('KafakaModule');
@@ -49,6 +50,25 @@ export class LogService {
     connectionsDisabledButSendReceived<T>(record: ProducerRecord<T>) {
         this.logger.log(`Kafka message send received but connections are disabled. Message topic '${record.topic}'`);
     }
+
+    getKafkaJsLogger = (logLevel) => {
+        return ({ namespace, level, label, log }) => {
+            const logger = new Logger(`KafakaJS:${namespace}`);
+            const { message, ...extra } = log;
+
+            logger.log(
+                util.inspect(
+                    {
+                        level,
+                        label,
+                        message,
+                        extra,
+                    },
+                    { showHidden: false, depth: null, colors: true },
+                ),
+            );
+        };
+    };
 }
 
 export const logService = new LogService();
