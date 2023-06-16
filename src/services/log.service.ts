@@ -54,19 +54,13 @@ export class LogService {
     getKafkaJsLogger = (logLevel) => {
         return ({ namespace, level, label, log }) => {
             const logger = new Logger(`KafakaJS:${namespace}`);
-            const { message, ...extra } = log;
+            const { message } = log;
 
-            logger.log(
-                util.inspect(
-                    {
-                        level,
-                        label,
-                        message,
-                        extra,
-                    },
-                    { showHidden: false, depth: null, colors: true },
-                ),
-            );
+            if (level === 'WARN') logger.warn(message);
+            else if (level === 'DEBUG') logger.debug(message);
+            else if (level === 'ERROR') logger.error(message);
+            else if (level === 'VERBOSE') logger.verbose(message);
+            else logger.log(message);
         };
     };
 }
