@@ -1,4 +1,3 @@
-import * as util from 'util';
 import { Logger } from '@nestjs/common';
 import { ProducerRecord } from '../interfaces/external.interface';
 
