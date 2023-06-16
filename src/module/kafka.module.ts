@@ -63,8 +63,9 @@ export class KafkaModule {
                             ...args,
                         );
 
-                        const kafka = new Kafka(kafkaConfig);
                         let registry: SchemaRegistry | undefined = undefined;
+                        kafkaConfig.logCreator = logService.getKafkaJsLogger;
+                        const kafka = new Kafka(kafkaConfig);
 
                         if (schemaRegistryConfig) {
                             registry = new SchemaRegistry(schemaRegistryConfig);
@@ -80,7 +81,9 @@ export class KafkaModule {
                         const { kafkaConfig, producerConfig, schemaRegistryConfig, disableConnections } =
                             await asyncConfig.useFactory(...args);
 
+                        kafkaConfig.logCreator = logService.getKafkaJsLogger;
                         const kafka = new Kafka(kafkaConfig);
+
                         const producer = kafka.producer(producerConfig);
                         let registry: SchemaRegistry | undefined = undefined;
 
