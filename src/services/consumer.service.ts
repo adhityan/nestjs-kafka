@@ -16,6 +16,7 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
         private readonly registry: SchemaRegistry | undefined,
         private readonly subscribeGroupInfos: SubscribeGroupInfoType,
         private readonly disableConnections?: boolean,
+        private readonly kafkaPrefix?: string,
     ) {
         this.subscriptionMap = new Map<string, Consumer>();
     }
@@ -26,6 +27,15 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
             return;
         }
         if (this.disableConnections) return;
+
+        if (this.kafkaPrefix) {
+            for await (const subscribeGroupInfo of this.subscribeGroupInfos.values()) {
+                for await (const topic of subscribeGroupInfo.topics.keys()) {
+                    subscribeGroupInfo.topics.set(`${this.kafkaPrefix}${topic}`, subscribeGroupInfo.topics.get(topic));
+                    subscribeGroupInfo.topics.delete(topic);
+                }
+            }
+        }
 
         for await (const [moduleName, subscribeGroupInfo] of this.subscribeGroupInfos) {
             const consumer = this.kafka.consumer(subscribeGroupInfo.consumerOptions);

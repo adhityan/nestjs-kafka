@@ -9,6 +9,7 @@ export class KafkaProducer implements OnModuleDestroy, OnModuleInit {
         private producer: Producer,
         private registry?: SchemaRegistry,
         private readonly disableConnections?: boolean,
+        private readonly kafkaPrefix?: string,
     ) {}
 
     async send<T = any>(record: ProducerRecord<T>, options: ProducerOption = { autoStringifyJson: true }) {
@@ -17,6 +18,10 @@ export class KafkaProducer implements OnModuleDestroy, OnModuleInit {
         if (this.disableConnections) {
             logService.connectionsDisabledButSendReceived(record);
             return;
+        }
+
+        if (this.kafkaPrefix) {
+            record.topic = `${this.kafkaPrefix}${record.topic}`;
         }
 
         if (schemaId) {

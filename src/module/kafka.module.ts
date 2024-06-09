@@ -16,6 +16,7 @@ export class KafkaModule {
         producerConfig,
         schemaRegistryConfig,
         disableConnections,
+        kafkaPrefix,
     }: KafkaModuleConfig): Promise<DynamicModule> {
         kafkaConfig.logCreator = logService.getKafkaJsLogger;
         const kafka = new Kafka(kafkaConfig);
@@ -35,13 +36,20 @@ export class KafkaModule {
                     provide: KafkaConsumer,
                     inject: [ModuleRef],
                     useFactory: (moduleRef: ModuleRef) => {
-                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos, disableConnections);
+                        return new KafkaConsumer(
+                            moduleRef,
+                            kafka,
+                            registry,
+                            subscribeGroupInfos,
+                            disableConnections,
+                            kafkaPrefix,
+                        );
                     },
                 },
                 {
                     provide: KafkaProducer,
                     useFactory: () => {
-                        return new KafkaProducer(producer, registry, disableConnections);
+                        return new KafkaProducer(producer, registry, disableConnections, kafkaPrefix);
                     },
                 },
             ],
@@ -59,9 +67,8 @@ export class KafkaModule {
                     provide: KafkaConsumer,
                     inject: [ModuleRef, ...asyncConfig.inject],
                     useFactory: async (moduleRef: ModuleRef, ...args) => {
-                        const { kafkaConfig, schemaRegistryConfig, disableConnections } = await asyncConfig.useFactory(
-                            ...args,
-                        );
+                        const { kafkaConfig, schemaRegistryConfig, disableConnections, kafkaPrefix } =
+                            await asyncConfig.useFactory(...args);
 
                         let registry: SchemaRegistry | undefined = undefined;
                         kafkaConfig.logCreator = logService.getKafkaJsLogger;
@@ -71,14 +78,21 @@ export class KafkaModule {
                             registry = new SchemaRegistry(schemaRegistryConfig);
                         }
 
-                        return new KafkaConsumer(moduleRef, kafka, registry, subscribeGroupInfos, disableConnections);
+                        return new KafkaConsumer(
+                            moduleRef,
+                            kafka,
+                            registry,
+                            subscribeGroupInfos,
+                            disableConnections,
+                            kafkaPrefix,
+                        );
                     },
                 },
                 {
                     provide: KafkaProducer,
                     inject: [...asyncConfig.inject],
                     useFactory: async (...args) => {
-                        const { kafkaConfig, producerConfig, schemaRegistryConfig, disableConnections } =
+                        const { kafkaConfig, producerConfig, schemaRegistryConfig, disableConnections, kafkaPrefix } =
                             await asyncConfig.useFactory(...args);
 
                         kafkaConfig.logCreator = logService.getKafkaJsLogger;
@@ -91,7 +105,7 @@ export class KafkaModule {
                             registry = new SchemaRegistry(schemaRegistryConfig);
                         }
 
-                        return new KafkaProducer(producer, registry, disableConnections);
+                        return new KafkaProducer(producer, registry, disableConnections, kafkaPrefix);
                     },
                 },
             ],

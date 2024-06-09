@@ -14,6 +14,7 @@ export interface KafkaModuleConfig {
     producerConfig?: ProducerConfig;
     schemaRegistryConfig?: SchemaRegistryAPIClientArgs;
     disableConnections?: boolean;
+    kafkaPrefix?: string;
 }
 
 export type KafkaModuleAsyncConfig = Pick<ModuleMetadata, 'imports'> &
