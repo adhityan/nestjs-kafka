@@ -29,11 +29,12 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
         if (this.disableConnections) return;
 
         if (this.kafkaPrefix) {
-            for await (const subscribeGroupInfo of this.subscribeGroupInfos.values()) {
+            const newSubsriptionMapping = new Map<string, ConsumerHandler>();
+            for await (const [key, subscribeGroupInfo] of this.subscribeGroupInfos.entries()) {
                 for await (const topic of subscribeGroupInfo.topics.keys()) {
-                    subscribeGroupInfo.topics.set(`${this.kafkaPrefix}${topic}`, subscribeGroupInfo.topics.get(topic));
-                    subscribeGroupInfo.topics.delete(topic);
+                    newSubsriptionMapping.set(`${this.kafkaPrefix}${topic}`, subscribeGroupInfo.topics.get(topic));
                 }
+                this.subscribeGroupInfos.get(key).topics = newSubsriptionMapping;
             }
         }
 
