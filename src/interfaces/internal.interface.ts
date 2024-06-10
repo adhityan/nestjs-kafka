@@ -10,7 +10,6 @@ export interface ConsumerHandler extends ConsumerOption {
 }
 
 export interface ConsumerGroupHandler extends ConsumerOption {
-    group: string;
     context: Function;
     consumerOptions: ConsumerConfig;
     topics: Map<string, ConsumerHandler>;

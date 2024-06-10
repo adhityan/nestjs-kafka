@@ -16,9 +16,21 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
         private readonly registry: SchemaRegistry | undefined,
         private readonly subscribeGroupInfos: SubscribeGroupInfoType,
         private readonly disableConnections?: boolean,
-        private readonly kafkaPrefix?: string,
+        readonly kafkaPrefix?: string,
     ) {
         this.subscriptionMap = new Map<string, Consumer>();
+
+        if (this.kafkaPrefix) {
+            const newSubsriptionMapping = new Map<string, ConsumerHandler>();
+            for (const [key, subscribeGroupInfo] of this.subscribeGroupInfos.entries()) {
+                for (const topic of subscribeGroupInfo.topics.keys()) {
+                    newSubsriptionMapping.set(`${this.kafkaPrefix}${topic}`, subscribeGroupInfo.topics.get(topic));
+                }
+
+                subscribeGroupInfo.topics = newSubsriptionMapping;
+                subscribeGroupInfo.consumerOptions.groupId = `${this.kafkaPrefix}${subscribeGroupInfo.consumerOptions.groupId}`;
+            }
+        }
     }
 
     async onModuleInit() {
@@ -27,18 +39,6 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit {
             return;
         }
         if (this.disableConnections) return;
-
-        if (this.kafkaPrefix) {
-            const newSubsriptionMapping = new Map<string, ConsumerHandler>();
-            for await (const [key, subscribeGroupInfo] of this.subscribeGroupInfos.entries()) {
-                for await (const topic of subscribeGroupInfo.topics.keys()) {
-                    newSubsriptionMapping.set(`${this.kafkaPrefix}${topic}`, subscribeGroupInfo.topics.get(topic));
-                }
-
-                subscribeGroupInfo.topics = newSubsriptionMapping;
-                subscribeGroupInfo.group = `${this.kafkaPrefix}${subscribeGroupInfo.group}`;
-            }
-        }
 
         for await (const [moduleName, subscribeGroupInfo] of this.subscribeGroupInfos) {
             const consumer = this.kafka.consumer(subscribeGroupInfo.consumerOptions);

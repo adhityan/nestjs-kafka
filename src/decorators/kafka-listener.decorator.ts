@@ -21,7 +21,6 @@ export function KafkaListener(consumerOptions: ConsumerConfig) {
 
             const subscriptionGroup: ConsumerGroupHandler = subscribeGroupInfos.get(constructor.name) || {
                 context: constructor,
-                group: consumerOptions.groupId,
                 topics: new Map(),
                 consumerOptions,
             };
