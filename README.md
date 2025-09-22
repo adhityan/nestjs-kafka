@@ -9,7 +9,9 @@ A NestJS - KafkaJs Wrapper, wrapping on [KafkaJS](https://github.com/tulios/kafk
 ```bash
 npm install @vvtri/nestjs-kafka
 ```
+
 or yarn:
+
 ```bash
 yarn add @vvtri/nestjs-kafka
 ```
@@ -19,23 +21,22 @@ yarn add @vvtri/nestjs-kafka
 ```ts
 import { KafkaModule, ConsumerConfig, KafkaConfig, KafkaModuleConfig } from '@vvtri/nestjs-kafka';
 
-
 const kafkaConfig: KafkaConfig = {
-  clientId: 'my-app',
-  brokers: ['localhost:9092'],
-  ssl: false,
-  connectionTimeout: 99999,
+    clientId: 'my-app',
+    brokers: ['localhost:9092'],
+    ssl: false,
+    connectionTimeout: 99999,
 };
 
 const consumerConfig: ConsumerConfig = {
-  groupId: 'test',
-  allowAutoTopicCreation: true,
+    groupId: 'test',
+    allowAutoTopicCreation: true,
 };
 
 @Module({
-  imports: [KafkaModule.forRoot({ kafkaConfig, consumerConfig })],
-  controllers: [],
-  providers: [],
+    imports: [KafkaModule.forRoot({ kafkaConfig, consumerConfig })],
+    controllers: [],
+    providers: [],
 })
 export class AppModule {}
 ```
@@ -45,23 +46,23 @@ To see all available config, see `KafkaModuleConfig.`
 ### How to sendMessage
 
 ```ts
-import {  KafkaProducer } from '@vvtri/nestjs-kafka';
+import { KafkaProducer } from '@vvtri/nestjs-kafka';
 
 @Injectable()
 export class TaskKafkaProductService {
-  constructor(private readonly kafkaProducer: KafkaProducer,) {}
+    constructor(private readonly kafkaProducer: KafkaProducer) {}
 
-  public async sendPushTask(kafkaTaskDto: KafkaTaskDto): Promise<any> {
-     await this.kafkaProducer.send<KafkaTaskDto>(
-      {
-        topic: Topic,
-        messages: [{ value: kafkaTaskDto }],
-      },
-      {
-        autoStringifyJson: true,
-      }
-    );
-  }
+    public async sendPushTask(kafkaTaskDto: KafkaTaskDto): Promise<any> {
+        await this.kafkaProducer.send<KafkaTaskDto>(
+            {
+                topic: Topic,
+                messages: [{ value: kafkaTaskDto }],
+            },
+            {
+                autoStringifyJson: true,
+            },
+        );
+    }
 }
 ```
 

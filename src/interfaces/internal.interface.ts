@@ -5,20 +5,22 @@ import { SubscribeInfoType } from '../data';
 import { ConsumerOption } from './external.interface';
 
 export interface SubscribeHandler extends ConsumerOption {
-  topic: string;
+    topic: string;
 }
 
 export interface ConsumerHandler extends ConsumerOption {
-  topic: string;
-  context: Function;
-  handler: (...args: any[]) => any;
+    topic: string;
+    context: Function;
+    handler: (...args: any[]) => any;
 }
 
 export interface KafkaConsumerParams {
-  consumer: Consumer;
-  subscribeInfos: SubscribeInfoType;
-  moduleRef: ModuleRef;
-  registry: SchemaRegistry | undefined;
-  shouldReadFromBeginning: boolean;
-  shouldRunConsumerAsync: boolean;
+    consumer: Consumer;
+    subscribeInfos: SubscribeInfoType;
+    moduleRef: ModuleRef;
+    registry: SchemaRegistry | undefined;
+    shouldReadFromBeginning: boolean;
+    shouldRunConsumerAsync: boolean;
+    mockConnections: boolean;
+    kafkaPrefix?: string;
 }

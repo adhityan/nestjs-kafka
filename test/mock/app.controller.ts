@@ -3,15 +3,15 @@ import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  constructor(private appService: AppService) {}
+    constructor(private appService: AppService) {}
 
-  @Post('/message')
-  sendMessage() {
-    return this.appService.sendMessage();
-  }
+    @Post('/message')
+    sendMessage() {
+        return this.appService.sendMessage();
+    }
 
-  @Get()
-  helloWorld() {
-    return 'ok';
-  }
+    @Get()
+    helloWorld() {
+        return 'ok';
+    }
 }

@@ -1,2 +1,2 @@
-export * from './kafka-listener.decorator'
-export * from './subscribe-to.decorator'
+export * from './kafka-listener.decorator';
+export * from './subscribe-to.decorator';

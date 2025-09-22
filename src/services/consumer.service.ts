@@ -3,101 +3,104 @@ import { Consumer, EachMessagePayload } from 'kafkajs';
 import { SubscribeInfoType } from '../data';
 import { SchemaRegistry } from '@kafkajs/confluent-schema-registry';
 import { ModuleRef } from '@nestjs/core';
-import {
-  ConsumerHandler,
-  KafkaConsumerParams,
-} from '../interfaces/internal.interface';
+import { ConsumerHandler, KafkaConsumerParams } from '../interfaces/internal.interface';
 import { logService } from './log.service';
 
-export class KafkaConsumer
-  implements OnModuleDestroy, OnModuleInit, KafkaConsumerParams
-{
-  consumer: Consumer;
-  subscribeInfos: SubscribeInfoType;
-  moduleRef: ModuleRef;
-  registry: SchemaRegistry | undefined;
-  shouldReadFromBeginning: boolean;
-  shouldRunConsumerAsync: boolean;
+export class KafkaConsumer implements OnModuleDestroy, OnModuleInit, KafkaConsumerParams {
+    consumer: Consumer;
+    subscribeInfos: SubscribeInfoType;
+    moduleRef: ModuleRef;
+    registry: SchemaRegistry | undefined;
+    shouldReadFromBeginning: boolean;
+    shouldRunConsumerAsync: boolean;
+    mockConnections: boolean;
+    kafkaPrefix?: string;
 
-  constructor(params: KafkaConsumerParams) {
-    Object.assign(this, params);
-  }
+    constructor(params: KafkaConsumerParams) {
+        if (params.kafkaPrefix) {
+            const newSubsriptionMapping = new Map<string, ConsumerHandler>();
 
-  async onModuleInit() {
-    if (this.shouldRunConsumerAsync) {
-      this.handleSubscribe().catch((error) =>
-        logService.errorWhenSubscribing(error),
-      );
-    } else {
-      await this.handleSubscribe().catch((error) =>
-        logService.errorWhenSubscribing(error),
-      );
-    }
-  }
+            for (const subscribeInfo of params.subscribeInfos.entries()) {
+                const topic = `${this.kafkaPrefix}${subscribeInfo[0]}`;
 
-  async onModuleDestroy() {
-    await this.consumer.disconnect();
-    logService.consumerDisconnected();
-  }
-
-  private async handleSubscribe() {
-    await this.consumer.connect();
-
-    if (!this.subscribeInfos.size) {
-      logService.warnNotSubcribeAnyTopic();
-      await this.consumer.disconnect();
-      return;
-    }
-
-    await this.consumer.subscribe({
-      topics: [...this.subscribeInfos.keys()],
-      fromBeginning: this.shouldReadFromBeginning,
-    });
-
-    await this.consumer.run({
-      eachMessage: async (payload: EachMessagePayload) => {
-        const subscribeInfo = this.subscribeInfos.get(
-          payload.topic,
-        ) as ConsumerHandler;
-
-        if (payload.message.value) {
-          if (subscribeInfo.autoParseBySchema) {
-            if (!this.registry) {
-              logService.errorParseBySchemaButSchemaRegistryNotfound(
-                subscribeInfo.topic,
-              );
-            } else {
-              payload.message.value = await this.registry.decode(
-                payload.message.value,
-              );
+                subscribeInfo[1].topic = topic;
+                newSubsriptionMapping.set(topic, subscribeInfo[1]);
             }
-          } else if (subscribeInfo.autoParseByJson) {
-            payload.message.value = await JSON.parse(
-              payload.message.value.toString(),
-            );
-          }
+
+            params.subscribeInfos = newSubsriptionMapping;
         }
 
-        const contextInstance = await this.getContextInstance(
-          subscribeInfo.context,
-        );
-
-        await subscribeInfo.handler.call(contextInstance, payload);
-      },
-    });
-
-    logService.subscribeToTopics(this.subscribeInfos.keys());
-    logService.consumerListening();
-  }
-
-  private async getContextInstance(context: Function) {
-    let instance = this.moduleRef.get(context, { strict: false });
-
-    if (!instance) {
-      instance = await this.moduleRef.create(instance);
-      logService.warnContextHasNotBeenInstanced(context.name);
+        Object.assign(this, params);
     }
 
-    return instance;
-  }
+    async onModuleInit() {
+        if (this.mockConnections) {
+            logService.connectionMockedAndTopicSubscribed(Array.from(this.subscribeInfos.keys()));
+            return;
+        }
+
+        if (this.shouldRunConsumerAsync) {
+            this.handleSubscribe().catch((error) => logService.errorWhenSubscribing(error));
+        } else {
+            await this.handleSubscribe().catch((error) => logService.errorWhenSubscribing(error));
+        }
+    }
+
+    async onModuleDestroy() {
+        if (this.mockConnections) return;
+
+        await this.consumer.disconnect();
+        logService.consumerDisconnected();
+    }
+
+    private async handleSubscribe() {
+        await this.consumer.connect();
+
+        if (!this.subscribeInfos.size) {
+            logService.warnNotSubcribeAnyTopic();
+            await this.consumer.disconnect();
+            return;
+        }
+
+        await this.consumer.subscribe({
+            topics: [...this.subscribeInfos.keys()],
+            fromBeginning: this.shouldReadFromBeginning,
+        });
+
+        await this.consumer.run({
+            eachMessage: async (payload: EachMessagePayload) => {
+                const subscribeInfo = this.subscribeInfos.get(payload.topic) as ConsumerHandler;
+
+                if (payload.message.value) {
+                    if (subscribeInfo.autoParseBySchema) {
+                        if (!this.registry) {
+                            logService.errorParseBySchemaButSchemaRegistryNotfound(subscribeInfo.topic);
+                        } else {
+                            payload.message.value = await this.registry.decode(payload.message.value);
+                        }
+                    } else if (subscribeInfo.autoParseByJson) {
+                        payload.message.value = await JSON.parse(payload.message.value.toString());
+                    }
+                }
+
+                const contextInstance = await this.getContextInstance(subscribeInfo.context);
+
+                await subscribeInfo.handler.call(contextInstance, payload);
+            },
+        });
+
+        logService.subscribeToTopics(this.subscribeInfos.keys());
+        logService.consumerListening();
+    }
+
+    private async getContextInstance(context: Function) {
+        let instance = this.moduleRef.get(context, { strict: false });
+
+        if (!instance) {
+            instance = await this.moduleRef.create(instance);
+            logService.warnContextHasNotBeenInstanced(context.name);
+        }
+
+        return instance;
+    }
 }
