@@ -3,7 +3,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Kafka } from 'kafkajs';
 import { subscribeInfos } from '../data';
-import { KafkaModuleConfig } from '../interfaces/external.interface';
+import { KafkaModuleAsyncConfig, KafkaModuleConfig } from '../interfaces/external.interface';
 import { KafkaConsumer } from '../services/consumer.service';
 import { KafkaProducer } from '../services/producer.service';
 
@@ -59,6 +59,71 @@ export class KafkaModule {
                 },
             ],
             exports: [KafkaProducer],
+        };
+    }
+
+    static async forRootAsync(asyncConfig: KafkaModuleAsyncConfig): Promise<DynamicModule> {
+        return {
+            global: true,
+            module: KafkaModule,
+            imports: asyncConfig.imports,
+            providers: [
+                {
+                    provide: KafkaConsumer,
+                    inject: [ModuleRef, ...asyncConfig.inject],
+                    useFactory: async (moduleRef: ModuleRef, ...args) => {
+                        const {
+                            consumerConfig,
+                            kafkaConfig,
+                            schemaRegistryConfig,
+                            mockConnections,
+                            kafkaPrefix,
+                            shouldReadFromBeginning,
+                            shouldRunConsumerAsync,
+                        } = await asyncConfig.useFactory(args);
+
+                        if (kafkaPrefix) {
+                            consumerConfig.groupId = `${kafkaPrefix}${consumerConfig.groupId}`;
+                        }
+                        const kafka = new Kafka(kafkaConfig);
+                        const consumer = kafka.consumer(consumerConfig);
+                        let registry: SchemaRegistry | undefined = undefined;
+
+                        if (schemaRegistryConfig) {
+                            registry = new SchemaRegistry(schemaRegistryConfig);
+                        }
+
+                        return new KafkaConsumer({
+                            consumer,
+                            subscribeInfos,
+                            moduleRef,
+                            registry,
+                            shouldReadFromBeginning,
+                            shouldRunConsumerAsync,
+                            mockConnections,
+                            kafkaPrefix,
+                        });
+                    },
+                },
+                {
+                    provide: KafkaProducer,
+                    inject: [...asyncConfig.inject],
+                    useFactory: async (...args) => {
+                        const { kafkaConfig, producerConfig, schemaRegistryConfig, mockConnections, kafkaPrefix } =
+                            await asyncConfig.useFactory(...args);
+
+                        const kafka = new Kafka(kafkaConfig);
+                        const producer = kafka.producer(producerConfig);
+                        let registry: SchemaRegistry | undefined = undefined;
+
+                        if (schemaRegistryConfig) {
+                            registry = new SchemaRegistry(schemaRegistryConfig);
+                        }
+
+                        return new KafkaProducer(producer, mockConnections, registry, kafkaPrefix);
+                    },
+                },
+            ],
         };
     }
 }

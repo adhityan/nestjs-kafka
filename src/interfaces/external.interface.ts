@@ -6,6 +6,7 @@ import {
 } from 'kafkajs';
 import { SchemaRegistryAPIClientArgs } from '@kafkajs/confluent-schema-registry/dist/api';
 import { KafkaConfig, ConsumerConfig, ProducerConfig } from 'kafkajs';
+import { FactoryProvider, ModuleMetadata } from '@nestjs/common';
 
 export interface KafkaModuleConfig {
     kafkaConfig: KafkaConfig;
@@ -17,6 +18,9 @@ export interface KafkaModuleConfig {
     mockConnections?: boolean;
     kafkaPrefix?: string;
 }
+
+export type KafkaModuleAsyncConfig = Pick<ModuleMetadata, 'imports'> &
+    Pick<FactoryProvider<KafkaModuleConfig>, 'useFactory' | 'inject'>;
 
 export interface ProducerOption {
     /**

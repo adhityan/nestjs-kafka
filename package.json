@@ -1,6 +1,6 @@
 {
     "name": "@adhityan/nestjs-kafka",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "description": "A different approach to integrating NestJs and Kafka",
     "main": "dist/src/index.js",
     "repository": {
@@ -54,8 +54,8 @@
         "@nestjs/platform-express": "^11.1.6",
         "@nestjs/testing": "11.1.6",
         "@types/supertest": "^6.0.3",
-        "@typescript-eslint/eslint-plugin": "^8.44.0",
-        "@typescript-eslint/parser": "^8.44.0",
+        "@typescript-eslint/eslint-plugin": "^8.44.1",
+        "@typescript-eslint/parser": "^8.44.1",
         "eslint": "^9.36.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
