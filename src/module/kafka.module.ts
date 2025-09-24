@@ -72,7 +72,7 @@ export class KafkaModule {
                     provide: KafkaConsumer,
                     inject: [ModuleRef, ...asyncConfig.inject],
                     useFactory: async (moduleRef: ModuleRef, ...args) => {
-                        const {
+                        let {
                             consumerConfig,
                             kafkaConfig,
                             schemaRegistryConfig,
@@ -80,11 +80,19 @@ export class KafkaModule {
                             kafkaPrefix,
                             shouldReadFromBeginning,
                             shouldRunConsumerAsync,
-                        } = await asyncConfig.useFactory(args);
+                        } = await asyncConfig.useFactory(...args);
+
+                        if (shouldReadFromBeginning === undefined) {
+                            shouldReadFromBeginning = true;
+                        }
+
+                        mockConnections = !!mockConnections;
+                        shouldRunConsumerAsync = !!shouldRunConsumerAsync;
 
                         if (kafkaPrefix) {
                             consumerConfig.groupId = `${kafkaPrefix}${consumerConfig.groupId}`;
                         }
+
                         const kafka = new Kafka(kafkaConfig);
                         const consumer = kafka.consumer(consumerConfig);
                         let registry: SchemaRegistry | undefined = undefined;
@@ -109,9 +117,10 @@ export class KafkaModule {
                     provide: KafkaProducer,
                     inject: [...asyncConfig.inject],
                     useFactory: async (...args) => {
-                        const { kafkaConfig, producerConfig, schemaRegistryConfig, mockConnections, kafkaPrefix } =
+                        let { kafkaConfig, producerConfig, schemaRegistryConfig, mockConnections, kafkaPrefix } =
                             await asyncConfig.useFactory(...args);
 
+                        mockConnections = !!mockConnections;
                         const kafka = new Kafka(kafkaConfig);
                         const producer = kafka.producer(producerConfig);
                         let registry: SchemaRegistry | undefined = undefined;
