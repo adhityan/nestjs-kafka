@@ -48,11 +48,15 @@ export class KafkaProducer implements OnModuleDestroy, OnModuleInit {
     }
 
     async onModuleInit() {
+        if (this.mockConnections) return;
+
         await this.producer.connect();
         logService.producerConnected();
     }
 
     async onModuleDestroy() {
+        if (this.mockConnections) return;
+
         await this.producer.disconnect();
         logService.producerDisconnected();
     }
