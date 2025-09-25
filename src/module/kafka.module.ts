@@ -133,6 +133,7 @@ export class KafkaModule {
                     },
                 },
             ],
+            exports: [KafkaProducer],
         };
     }
 }

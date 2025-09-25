@@ -1,11 +1,11 @@
 {
     "name": "@adhityan/nestjs-kafka",
-    "version": "1.5.3",
+    "version": "1.5.4",
     "description": "A different approach to integrating NestJs and Kafka",
     "main": "dist/src/index.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/vvtri/nestjs-kafka"
+        "url": "https://github.com/adhityan/nestjs-kafka"
     },
     "keywords": [
         "nest",
