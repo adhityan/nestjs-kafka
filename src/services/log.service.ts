@@ -56,7 +56,7 @@ export class LogService {
     }
 
     connectionMockedAndTopicSubscribed<T>(topics: string[]) {
-        this.logger.log(`Kafka topics subscribed but connections are disabled. Topics - ${topics.join(', ')}`);
+        this.logger.log(`Kafka topics subscribed but connections are disabled. Topics - [${topics.join(', ')}]`);
     }
 }
 

@@ -21,7 +21,7 @@ export class KafkaConsumer implements OnModuleDestroy, OnModuleInit, KafkaConsum
             const newSubsriptionMapping = new Map<string, ConsumerHandler>();
 
             for (const subscribeInfo of params.subscribeInfos.entries()) {
-                const topic = `${this.kafkaPrefix}${subscribeInfo[0]}`;
+                const topic = `${params.kafkaPrefix}${subscribeInfo[0]}`;
 
                 subscribeInfo[1].topic = topic;
                 newSubsriptionMapping.set(topic, subscribeInfo[1]);
