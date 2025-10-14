@@ -1,8 +1,14 @@
 {
     "name": "@adhityan/nestjs-kafka",
-    "version": "1.5.5",
+    "version": "1.5.7",
     "description": "A different approach to integrating NestJs and Kafka",
-    "main": "dist/src/index.js",
+    "scripts": {
+        "build": "tsc",
+        "test": "jest --config ./test/jest.config.json",
+        "start": "nest start -c ./test/mock/nest-cli.json --watch",
+        "prettier": "prettier --write --ignore-unknown .",
+        "lint": "eslint --fix --ext .js,.jsx ."
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/adhityan/nestjs-kafka"
@@ -13,6 +19,7 @@
         "kafka",
         "nestjs-kafka"
     ],
+    "main": "dist/src/index.js",
     "types": "dist/src/index.d.ts",
     "publishConfig": {
         "access": "public"
@@ -29,13 +36,6 @@
             "optional": true
         }
     },
-    "scripts": {
-        "build": "tsc",
-        "test": "jest --config ./test/jest.config.json",
-        "start": "nest start -c ./test/mock/nest-cli.json --watch",
-        "prettier": "prettier --write --ignore-unknown .",
-        "lint": "eslint --fix --ext .js,.jsx ."
-    },
     "author": "Adhityan KV <kvadhi@gmail.com> (https://github.com/adhityan/)",
     "license": "ISC",
     "files": [
@@ -48,24 +48,24 @@
     },
     "devDependencies": {
         "@babel/preset-typescript": "^7.27.1",
-        "@jest/globals": "^30.1.2",
+        "@jest/globals": "^30.2.0",
         "@nestjs/common": "^11.1.6",
         "@nestjs/core": "^11.1.6",
         "@nestjs/platform-express": "^11.1.6",
         "@nestjs/testing": "11.1.6",
         "@types/supertest": "^6.0.3",
-        "@typescript-eslint/eslint-plugin": "^8.44.1",
-        "@typescript-eslint/parser": "^8.44.1",
-        "eslint": "^9.36.0",
+        "@typescript-eslint/eslint-plugin": "^8.46.1",
+        "@typescript-eslint/parser": "^8.46.1",
+        "eslint": "^9.37.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
-        "jest": "^30.1.3",
+        "jest": "^30.2.0",
         "prettier": "^3.6.2",
         "rimraf": "^6.0.1",
         "rxjs": "^7.8.2",
         "supertest": "^7.1.4",
-        "ts-jest": "^29.4.4",
-        "typescript": "^5.9.2"
+        "ts-jest": "^29.4.5",
+        "typescript": "^5.9.3"
     },
     "engines": {
         "node": ">= 20.0.0"
